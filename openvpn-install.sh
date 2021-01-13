@@ -11,13 +11,13 @@ function isRoot() {
 }
 
 function tunAvailable() {
-	if [ ! -e /dev/net/tun ]; then
+ 	if [ ! -e /dev/net/tun ]; then
 		return 1
 	fi
 }
 
 function checkOS() {
-	if [[ -e /etc/debian_version ]]; then
+ 	if [[ -e /etc/debian_version ]]; then
 		OS="debian"
 		source /etc/os-release
 
@@ -100,7 +100,7 @@ function installUnbound() {
 	if [[ ! -e /etc/unbound/unbound.conf ]]; then
 
 		if [[ $OS =~ (debian|ubuntu) ]]; then
-			apt-get install -y unbound
+ 			apt-get install -y unbound
 
 			# Configuration
 			echo 'interface: 10.8.0.1
@@ -110,7 +110,7 @@ hide-version: yes
 use-caps-for-id: yes
 prefetch: yes' >>/etc/unbound/unbound.conf
 
-		elif [[ $OS =~ (centos|amzn) ]]; then
+ 		elif [[ $OS =~ (centos|amzn) ]]; then
 			yum install -y unbound
 
 			# Configuration
@@ -157,13 +157,13 @@ prefetch: yes' >>/etc/unbound/unbound.conf
 	hide-version: yes
 	qname-minimisation: yes
 	prefetch: yes' >/etc/unbound/unbound.conf
-		fi
+ 		fi
 
 		# IPv6 DNS for all OS
 		if [[ $IPV6_SUPPORT == 'y' ]]; then
 			echo 'interface: fd42:42:42:42::1
 access-control: fd42:42:42:42::/112 allow' >>/etc/unbound/unbound.conf
-		fi
+ 		fi
 
 		if [[ ! $OS =~ (fedora|centos|amzn) ]]; then
 			# DNS Rebinding fix
@@ -176,7 +176,7 @@ private-address: fd00::/8
 private-address: fe80::/10
 private-address: 127.0.0.0/8
 private-address: ::ffff:0:0/96" >>/etc/unbound/unbound.conf
-		fi
+ 		fi
 	else # Unbound is already installed
 		echo 'include: /etc/unbound/openvpn.conf' >>/etc/unbound/unbound.conf
 
@@ -602,9 +602,9 @@ function installQuestions() {
 }
 
 function installOpenVPN() {
-	if [[ $AUTO_INSTALL == "y" ]]; then
+ 	if [[ $AUTO_INSTALL == "y" ]]; then
 		# Set default choices so that no questions will be asked.
-		APPROVE_INSTALL=${APPROVE_INSTALL:-y}
+ 		APPROVE_INSTALL=${APPROVE_INSTALL:-y}
 		APPROVE_IP=${APPROVE_IP:-y}
 		IPV6_SUPPORT=${IPV6_SUPPORT:-n}
 		PORT_CHOICE=${PORT_CHOICE:-1}
@@ -636,7 +636,7 @@ function installOpenVPN() {
 
 	# $NIC can not be empty for script rm-openvpn-rules.sh
 	if [[ -z $NIC ]]; then
-		echo
+ 		echo
 		echo "Can not detect public interface."
 		echo "This needs for setup MASQUERADE."
 		until [[ $CONTINUE =~ (y|n) ]]; do
@@ -651,12 +651,12 @@ function installOpenVPN() {
 	# idempotent on multiple runs, but will only install OpenVPN from upstream
 	# the first time.
 	if [[ ! -e /etc/openvpn/server.conf ]]; then
-		if [[ $OS =~ (debian|ubuntu) ]]; then
-			apt-get update
+ 		if [[ $OS =~ (debian|ubuntu) ]]; then
+			a pt-get update
 			apt-get -y install ca-certificates gnupg
 			# We add the OpenVPN repo to get the latest version.
 			if [[ $VERSION_ID == "16.04" ]]; then
-				echo "deb http://build.openvpn.net/debian/openvpn/stable xenial main" >/etc/apt/sources.list.d/openvpn.list
+			 	echo "deb http://build.openvpn.net/debian/openvpn/stable xenial main" >/etc/apt/sources.list.d/openvpn.list
 				wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg | apt-key add -
 				apt-get update
 			fi
@@ -878,14 +878,18 @@ cert $SERVER_NAME.crt
 key $SERVER_NAME.key
 auth $HMAC_ALG
 cipher $CIPHER
-ncp-ciphers $CIPHER
-tls-server
-tls-version-min 1.2
-tls-cipher $CC_CIPHER
 client-config-dir /etc/openvpn/ccd
 status /var/log/openvpn/status.log
 verb 3" >>/etc/openvpn/server.conf
 
+  if [[ $TLS_ENABLED == "y" ]]; then
+    echo "
+      ncp-ciphers $CIPHER
+      tls-server
+      tls-version-min 1.2
+      tls-cipher $CC_CIPHER
+      " >>/etc/openvpn/server.conf
+  fi
 	# Create client-config-dir dir
 	mkdir -p /etc/openvpn/ccd
 	# Create log dir
